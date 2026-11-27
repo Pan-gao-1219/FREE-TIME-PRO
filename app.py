@@ -76,7 +76,7 @@ def create_dialog(store):
         )
         mode = st.radio("网格模式", list(GRID_MODES), format_func=GRID_MODES.get, horizontal=True)
         st.caption(f"课节模式每格 50 分钟，所有参与者共用所选校区的[上课时间表]({TIMETABLE_SOURCE})。")
-        st.caption(f"默认从今天开始，最多选 {MAX_DAYS} 天。电脑每页最多 7 天，窄屏手机每页最多 4 天。")
+        st.caption(f"默认从今天开始，最多选 {MAX_DAYS} 天。每页最多 7 天，窄屏自动调整为 5 天。")
         if st.form_submit_button("创建并打开", type="primary"):
             try:
                 event = create_event(title, date_range, mode)

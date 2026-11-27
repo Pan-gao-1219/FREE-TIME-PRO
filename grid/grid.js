@@ -60,7 +60,7 @@ function createPlanner(planner) {
   }
 
   function daysPerPage(width) {
-    return width > 0 && width < 440 ? 4 : 7;
+    return width > 0 && width < 328 ? 5 : 7;
   }
 
   new ResizeObserver(([entry]) => {
@@ -81,10 +81,6 @@ function createPlanner(planner) {
     return [date.label, date.weekday, row.lesson, `${row.start}–${row.end}`].filter(Boolean).join(" ");
   }
 
-  function quantity(count) {
-    return `${count} ${data.rows[0].lesson ? "节" : "小时"}`;
-  }
-
   function node(tag, className, label) {
     const element = document.createElement(tag);
     if (className) element.className = className;
@@ -93,12 +89,10 @@ function createPlanner(planner) {
   }
 
   function updateActions() {
-    const pageSlots = cells.filter((cell) => selected.has(cell.dataset.slot)).length;
-    byId("selected-count").textContent = `已涂 ${quantity(selected.size)}`;
-    byId("page-count").textContent = `本页 ${quantity(pageSlots)} · ${dirty() || !data.has_response ? "待保存" : "已保存"}`;
-    byId("save").disabled = Boolean(pending) || (data.has_response && !dirty());
-    byId("save").textContent = data.has_response && !dirty() ? "已保存" : "保存我的时间";
-    byId("clear").disabled = Boolean(pending) || pageSlots === 0;
+    const isSaved = data.has_response && !dirty();
+    byId("save").disabled = Boolean(pending) || isSaved;
+    byId("save").textContent = isSaved ? "已保存" : "保存我的时间";
+    byId("clear").disabled = Boolean(pending) || !cells.some((cell) => selected.has(cell.dataset.slot));
     byId("refresh").disabled = Boolean(pending);
   }
 
@@ -154,14 +148,14 @@ function createPlanner(planner) {
     byId("previous").disabled = page === 0;
     byId("next").disabled = (page + 1) * pageSize >= data.dates.length;
     weekPicker.value = String(page);
-    weekPicker.hidden = weekPicker.options.length === 1;
-    byId("previous").hidden = byId("next").hidden = weekPicker.hidden;
+    weekPicker.parentElement.hidden = weekPicker.options.length === 1;
     byId("guide").textContent = editing
-      ? "点一下切换，拖动可涂满一片。翻页保留选择，全部选完一起保存。"
+      ? "点选或拖涂空闲时段，翻页后可一起保存。"
       : "数字是有空的人数，颜色越深表示人越多。点格子看都有谁。";
 
     grid.classList.toggle("editor", editing);
     grid.style.setProperty("--days", days.length);
+    grid.style.setProperty("--page-size", pageSize);
     const contents = document.createDocumentFragment();
     contents.append(node("span", "hour", "时段"));
     for (const day of days) {
@@ -328,7 +322,7 @@ function createPlanner(planner) {
       else if (pending.type === "save") {
         selected = new Set(next.selected);
         saved = new Set(next.selected);
-        message(`已保存 ${quantity(saved.size)}。`);
+        message("空闲时间已保存。");
       } else message("结果已刷新。");
       pending = undefined;
     }

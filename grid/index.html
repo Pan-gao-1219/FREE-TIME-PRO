@@ -4,11 +4,6 @@
       <button id="mine" type="button" aria-pressed="false">我的时间</button>
       <button id="group" type="button" aria-pressed="false">大家的时间</button>
     </div>
-    <div class="week-picker">
-      <button id="previous" type="button" aria-label="上一页日期">‹</button>
-      <select id="week" aria-label="选择日期段"></select>
-      <button id="next" type="button" aria-label="下一页日期">›</button>
-    </div>
   </header>
   <div class="workspace">
     <section class="calendar">
@@ -16,13 +11,16 @@
       <p id="guide"></p>
       <div id="scale" class="scale" hidden><span>人数少</span><i aria-hidden="true"></i><span>人数多</span></div>
       <p id="detail" role="status" hidden></p>
+      <nav class="week-picker" aria-label="日期翻页">
+        <button id="previous" type="button" aria-label="上一页日期">‹</button>
+        <select id="week" aria-label="选择日期段"></select>
+        <button id="next" type="button" aria-label="下一页日期">›</button>
+      </nav>
       <div id="grid" aria-label="空闲时段选择网格"></div>
     </section>
     <aside class="sidebar">
       <section id="editor-actions" class="panel" hidden>
         <h3>我的选择</h3>
-        <strong class="metric" id="selected-count"></strong>
-        <p class="muted" id="page-count"></p>
         <div class="panel-actions">
           <button id="save" type="button" class="primary">保存我的时间</button>
           <button id="clear" type="button" class="quiet">清空本页</button>
