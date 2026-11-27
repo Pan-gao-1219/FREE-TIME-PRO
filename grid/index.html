@@ -1,0 +1,38 @@
+  <section id="planner" lang="zh-CN" hidden>
+    <div class="toolbar">
+      <div class="tabs" aria-label="网格模式">
+        <button id="mine" type="button" aria-pressed="false">我的时间</button>
+        <button id="group" type="button" aria-pressed="false">大家的时间</button>
+      </div>
+      <button id="share" type="button" class="quiet">复制活动链接</button>
+    </div>
+    <div id="share-fallback" hidden>
+      <input id="share-value" readonly aria-label="分享内容">
+      <small id="share-hint"></small>
+    </div>
+    <div id="group-summary" hidden>
+      <div class="toolbar">
+        <strong id="people-count"></strong>
+        <button id="refresh" type="button" class="quiet">刷新结果</button>
+      </div>
+      <div id="recommendations" aria-label="人数最多的时段"></div>
+    </div>
+    <div class="week-picker">
+      <button id="previous" type="button" aria-label="前 7 天">‹</button>
+      <select id="week" aria-label="选择日期段"></select>
+      <button id="next" type="button" aria-label="后 7 天">›</button>
+    </div>
+    <p id="guide"></p>
+    <div class="scroller">
+      <div id="grid" aria-label="每小时空闲时间"></div>
+    </div>
+    <p id="detail" role="status" hidden></p>
+    <div id="editor-actions" class="toolbar" hidden>
+      <div>
+        <strong id="selected-count"></strong>
+        <button id="clear" class="quiet" type="button">清空本页</button>
+      </div>
+      <button id="save" type="button" class="primary">保存我的时间</button>
+    </div>
+    <p id="message" role="status" hidden></p>
+  </section>

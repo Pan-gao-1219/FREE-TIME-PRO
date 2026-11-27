@@ -1,0 +1,66 @@
+#planner {
+  color: var(--st-text-color, #172a25);
+  font: 14px/1.45 system-ui, "Microsoft YaHei", sans-serif;
+  --green: var(--st-primary-color, #087966);
+  --muted: #536b61;
+  --line: #dce8df;
+  padding: 12px;
+  border: 1px solid var(--line);
+  background: white;
+  border-radius: 16px;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+button, select, input { font: inherit; color: inherit; }
+button, select {
+  border: 1px solid var(--line); background: white; border-radius: 8px;
+  padding: 7px 11px; min-height: 36px; cursor: pointer;
+}
+button:hover:not(:disabled), select:hover { border-color: var(--green); }
+button:disabled { opacity: .48; cursor: default; }
+button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid #075a4f; outline-offset: 2px; }
+.toolbar { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.tabs { display: inline-flex; gap: 3px; padding: 3px; border-radius: 11px; background: #f0f5f0; }
+.tabs button { min-height: 33px; border-color: transparent; background: transparent; }
+.tabs button[aria-pressed="true"] { color: #065a4b; background: white; border-color: var(--line); font-weight: 650; }
+.quiet { color: #276453; }
+.primary { background: var(--green); border-color: var(--green); color: white; font-weight: 650; }
+.primary:hover:not(:disabled) { background: #056555; }
+.week-picker { display: flex; gap: 5px; justify-content: center; margin-top: 12px; }
+.week-picker select { text-align: center; padding-inline: 8px; }
+.week-picker button { padding-inline: 13px; font-size: 19px; line-height: 1; }
+#share-fallback { margin-top: 8px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+#share-value { flex: 1 1 220px; min-width: 0; border: 1px solid var(--line); border-radius: 7px; padding: 6px; }
+#group-summary { margin-top: 12px; padding: 10px; background: #f4f8f4; border-radius: 10px; }
+#recommendations { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+#recommendations:empty { display: none; }
+#recommendations button { min-height: 30px; padding: 3px 8px; }
+#guide, #detail, #message { color: var(--muted); margin: 9px 0 6px; font-size: 13px; }
+#detail { background: #edf6f1; padding: 7px 9px; border-radius: 7px; overflow-wrap: anywhere; }
+#message[data-error="true"] { color: #a12c21; }
+.scroller { overflow-x: auto; padding: 2px 3px 3px; }
+#grid {
+  display: grid; grid-template-columns: 43px repeat(var(--days), minmax(34px, 1fr));
+  align-items: center; gap: 3px 4px; user-select: none;
+}
+.day { text-align: center; font-weight: 650; line-height: 1.2; padding-bottom: 4px; }
+.day small { display: block; font-size: 11px; font-weight: 500; color: var(--muted); }
+.hour { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.cell {
+  display: grid; place-items: center; width: 100%; min-width: 0; height: 26px; min-height: 0;
+  padding: 0; border-radius: 4px; background: #f0f5f0; border-color: #e8f0e8; line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.editor .cell { touch-action: none; cursor: crosshair; }
+.editor .cell[aria-pressed="true"] { background: var(--green); border-color: var(--green); color: white; }
+.cell[aria-current="true"] { outline: 2px solid #142f28; outline-offset: -2px; }
+#editor-actions { margin-top: 8px; }
+#selected-count { margin-right: 5px; }
+@media (max-width: 500px) {
+  #planner { padding: 8px; }
+  #grid { grid-template-columns: 34px repeat(var(--days), minmax(32px, 1fr)); gap: 3px; }
+  .scroller { padding-inline: 1px; }
+  .cell { height: 29px; }
+  .day { font-size: 12px; }
+  .tabs button, #share { font-size: 12px; padding-inline: 6px; }
+}
