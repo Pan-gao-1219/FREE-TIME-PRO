@@ -1,38 +1,44 @@
-  <section id="planner" lang="zh-CN" hidden>
-    <div class="toolbar">
-      <div class="tabs" aria-label="网格模式">
-        <button id="mine" type="button" aria-pressed="false">我的时间</button>
-        <button id="group" type="button" aria-pressed="false">大家的时间</button>
-      </div>
-      <button id="share" type="button" class="quiet">复制活动链接</button>
-    </div>
-    <div id="share-fallback" hidden>
-      <input id="share-value" readonly aria-label="分享内容">
-      <small id="share-hint"></small>
-    </div>
-    <div id="group-summary" hidden>
-      <div class="toolbar">
-        <strong id="people-count"></strong>
-        <button id="refresh" type="button" class="quiet">刷新结果</button>
-      </div>
-      <div id="recommendations" aria-label="人数最多的时段"></div>
+<section id="planner" lang="zh-CN" hidden>
+  <header class="workbar">
+    <div class="tabs" aria-label="选择视图">
+      <button id="mine" type="button" aria-pressed="false">我的时间</button>
+      <button id="group" type="button" aria-pressed="false">大家的时间</button>
     </div>
     <div class="week-picker">
-      <button id="previous" type="button" aria-label="前 7 天">‹</button>
+      <button id="previous" type="button" aria-label="上一页日期">‹</button>
       <select id="week" aria-label="选择日期段"></select>
-      <button id="next" type="button" aria-label="后 7 天">›</button>
+      <button id="next" type="button" aria-label="下一页日期">›</button>
     </div>
-    <p id="guide"></p>
-    <div class="scroller">
-      <div id="grid" aria-label="每小时空闲时间"></div>
-    </div>
-    <p id="detail" role="status" hidden></p>
-    <div id="editor-actions" class="toolbar" hidden>
-      <div>
-        <strong id="selected-count"></strong>
-        <button id="clear" class="quiet" type="button">清空本页</button>
-      </div>
-      <button id="save" type="button" class="primary">保存我的时间</button>
-    </div>
-    <p id="message" role="status" hidden></p>
-  </section>
+  </header>
+  <div class="workspace">
+    <section class="calendar">
+      <h2 id="view-heading"></h2>
+      <p id="guide"></p>
+      <div id="scale" class="scale" hidden><span>人数少</span><i aria-hidden="true"></i><span>人数多</span></div>
+      <p id="detail" role="status" hidden></p>
+      <div id="grid" aria-label="空闲时段选择网格"></div>
+    </section>
+    <aside class="sidebar">
+      <section id="editor-actions" class="panel" hidden>
+        <h3>我的选择</h3>
+        <strong class="metric" id="selected-count"></strong>
+        <p class="muted" id="page-count"></p>
+        <div class="panel-actions">
+          <button id="save" type="button" class="primary">保存我的时间</button>
+          <button id="clear" type="button" class="quiet">清空本页</button>
+        </div>
+      </section>
+      <section id="group-summary" class="panel" hidden>
+        <h3>参与情况</h3>
+        <strong class="metric" id="people-count"></strong>
+        <button id="refresh" type="button" class="quiet">刷新结果</button>
+        <div class="ranking">
+          <h3>人数最多的时段</h3>
+          <div id="recommendations"></div>
+          <p class="muted" id="empty-results">目前还没有人标出空闲时段。</p>
+        </div>
+      </section>
+      <p id="message" role="status" hidden></p>
+    </aside>
+  </div>
+</section>

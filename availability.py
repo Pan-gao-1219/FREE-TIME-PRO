@@ -13,6 +13,18 @@ MAX_DAYS = 90
 FIRST_END = date(2026, 12, 10)
 CHINA = timezone(timedelta(hours=8))
 EVENT_ID = re.compile(r"[0-9a-f]{16}")
+TIMETABLE_SOURCE = "https://jwc.ouc.edu.cn/2022/0903/c6752a376517/page.htm"
+GRID_MODES = {
+    "hourly": "每格 1 小时",
+    "laoshan_2022": "海大课节 · 崂山",
+    "west_coast_2022": "海大课节 · 西海岸",
+}
+# The OUC timetable effective autumn 2022. Versioned keys preserve past activities.
+CAMPUS_MORNINGS = {
+    "laoshan_2022": ("08:00", "09:00", "10:10", "11:10"),
+    "west_coast_2022": ("08:30", "09:25", "10:30", "11:25"),
+}
+AFTERNOON_AND_EVENING = ("13:30", "14:30", "15:30", "16:30", "17:30", "18:30", "19:30", "20:30")
 
 
 class AvailabilityError(Exception):
@@ -29,7 +41,25 @@ def default_range():
     return start, FIRST_END if start <= FIRST_END <= end else end
 
 
-def create_event(title, dates):
+def time_rows(event):
+    mode = event.get("grid_mode", "hourly")
+    if mode == "hourly":
+        # Existing records use the two-digit hour as the slot key.
+        return [{"key": f"{hour:02d}", "start": f"{hour:02d}:00", "end": f"{hour+1:02d}:00", "lesson": ""}
+                for hour in range(START_HOUR, END_HOUR)]
+    if mode not in CAMPUS_MORNINGS:
+        raise AvailabilityError("无法识别此活动的网格模式。")
+    rows = []
+    for number, start in enumerate(CAMPUS_MORNINGS[mode] + AFTERNOON_AND_EVENING, start=1):
+        hour, minute = map(int, start.split(":"))
+        end_hour, end_minute = divmod(hour * 60 + minute + 50, 60)
+        rows.append({"key": start, "start": start, "end": f"{end_hour:02d}:{end_minute:02d}", "lesson": f"第{number}节"})
+    return rows
+
+
+def create_event(title, dates, grid_mode="hourly"):
+    if grid_mode not in GRID_MODES:
+        raise AvailabilityError("请选择活动的网格模式。")
     title = title.strip()
     if not title or len(title) > 80:
         raise AvailabilityError("请输入 1–80 个字的活动名称。")
@@ -41,6 +71,7 @@ def create_event(title, dates):
     return {
         "id": secrets.token_hex(8),
         "title": title,
+        "grid_mode": grid_mode,
         "start": start.isoformat(),
         "end": end.isoformat(),
         "members": {},
@@ -74,8 +105,8 @@ def verify_member(member, code):
 
 def save_response(event, identity, selected):
     key, name, code = identity
-    valid = {f"{day.isoformat()}T{hour:02d}" for day in dates_for(event)
-             for hour in range(START_HOUR, END_HOUR)}
+    rows = time_rows(event)
+    valid = {f"{day.isoformat()}T{row['key']}" for day in dates_for(event) for row in rows}
     if (not isinstance(selected, list) or len(selected) > len(valid)
             or any(not isinstance(slot, str) or slot not in valid for slot in selected)):
         raise AvailabilityError("有时间格不属于这个活动。请重新打开活动再试。")

@@ -75,6 +75,26 @@
 .ft-credit strong { color: #244237; }
 .ft-school { padding-left: 10px; border-left: 1px solid #c5d5ca; }
 .ft-credit a { color: #256858; text-decoration: underline; text-underline-offset: 3px; overflow-wrap: anywhere; }
+.ft-home-link { color:#286253; font:600 14px/1.4 Inter,"Microsoft YaHei",sans-serif; padding:10px 0 10px 10px; text-decoration:none; }
+.ft-home-link:hover { text-decoration:underline; }
+.st-key-ft_event_banner {
+  border-radius:18px; padding:clamp(20px,3vw,36px);
+  background:linear-gradient(105deg,#102c39,#12414a 70%,#205855);
+}
+.ft-event-info small { font-size:13px; font-weight:600; color:#aad8c7; }
+.ft-event-info h1 { margin:6px 0; padding:0; color:white; font:700 clamp(25px,3.6vw,40px)/1.25 Inter,"Microsoft YaHei",sans-serif; overflow-wrap:anywhere; }
+.ft-event-info p { display:flex; flex-wrap:wrap; gap:2px 20px; margin:10px 0 0; font-size:14px; color:#d0e4e1; font-variant-numeric:tabular-nums; }
+.st-key-ft_entry { background:white; padding:clamp(18px,2vw,28px); border-radius:15px; }
+.st-key-ft_entry h3 { font-size:22px; letter-spacing:-.03em; }
+.ft-overview { padding:clamp(18px,2vw,28px); border:1px solid #d7e7df; border-radius:15px; background:#edf5ef; }
+.ft-overview h3 { font-size:18px; margin:0; padding:0; color:#153f36; }
+.ft-overview dl { margin:14px 0; padding:0; }
+.ft-overview dl div { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #cedfd3; }
+.ft-overview dt, .ft-overview p { color:#526c60; font-size:14px; }
+.ft-overview dd { margin:0; font-weight:650; color:#204738; }
+.ft-overview p { line-height:1.7; margin:12px 0 0; }
+.st-key-ft_identity { padding-inline:3px; }
+.st-key-ft_event .ft-credit { padding:15px 2px 5px; border-top:1px solid #d5e3d9; }
 @media (max-width: 760px) {
   .st-key-ft_hero { padding: 26px 22px 20px; }
   .ft-board { padding: 15px; }

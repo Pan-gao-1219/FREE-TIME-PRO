@@ -11,8 +11,7 @@ function createPlanner(planner) {
   const byId = (id) => planner.querySelector(`#${id}`);
   const grid = byId("grid");
   const weekPicker = byId("week");
-  const pageSize = 7;
-  const clock = (hour) => `${String(hour).padStart(2, "0")}:00`;
+  let pageSize = 7;
 
   let data;
   let mode;
@@ -50,10 +49,40 @@ function createPlanner(planner) {
     return data.dates.slice(page * pageSize, (page + 1) * pageSize);
   }
 
+  function rebuildDatePicker() {
+    const choices = [];
+    for (let i = 0; i < data.dates.length; i += pageSize) {
+      const first = data.dates[i].label;
+      const last = data.dates[Math.min(i + pageSize, data.dates.length) - 1].label;
+      choices.push(new Option(first === last ? first : `${first} – ${last}`, i / pageSize));
+    }
+    weekPicker.replaceChildren(...choices);
+  }
+
+  function daysPerPage(width) {
+    return width > 0 && width < 440 ? 4 : 7;
+  }
+
+  new ResizeObserver(([entry]) => {
+    if (!data || !entry.contentRect.width) return;
+    const size = daysPerPage(entry.contentRect.width);
+    if (size === pageSize) return;
+    if (drag) stopPaint();
+    const firstVisible = page * pageSize;
+    pageSize = size;
+    page = Math.floor(firstVisible / size);
+    rebuildDatePicker();
+    render();
+  }).observe(planner);
+
   function slotLabel(slot) {
     const date = data.dates.find((day) => day.iso === slot.slice(0, 10));
-    const hour = Number(slot.slice(11));
-    return `${date.label} ${date.weekday} ${clock(hour)}–${clock(hour + 1)}`;
+    const row = data.rows.find((item) => item.key === slot.slice(11));
+    return [date.label, date.weekday, row.lesson, `${row.start}–${row.end}`].filter(Boolean).join(" ");
+  }
+
+  function quantity(count) {
+    return `${count} ${data.rows[0].lesson ? "节" : "小时"}`;
   }
 
   function node(tag, className, label) {
@@ -64,10 +93,12 @@ function createPlanner(planner) {
   }
 
   function updateActions() {
-    byId("selected-count").textContent = `已涂 ${selected.size} 小时`;
+    const pageSlots = cells.filter((cell) => selected.has(cell.dataset.slot)).length;
+    byId("selected-count").textContent = `已涂 ${quantity(selected.size)}`;
+    byId("page-count").textContent = `本页 ${quantity(pageSlots)} · ${dirty() || !data.has_response ? "待保存" : "已保存"}`;
     byId("save").disabled = Boolean(pending) || (data.has_response && !dirty());
     byId("save").textContent = data.has_response && !dirty() ? "已保存" : "保存我的时间";
-    byId("clear").disabled = Boolean(pending) || !cells.some((cell) => selected.has(cell.dataset.slot));
+    byId("clear").disabled = Boolean(pending) || pageSlots === 0;
     byId("refresh").disabled = Boolean(pending);
   }
 
@@ -91,9 +122,11 @@ function createPlanner(planner) {
 
   function renderGroup() {
     const { top, total, people } = data.summary;
-    byId("people-count").textContent = `${total} 人已提交${top.length ? " · 人数最多的时段" : ""}`;
+    byId("people-count").textContent = `${total} 人已提交`;
+    byId("empty-results").hidden = top.length > 0;
     const suggestions = top.map((slot) => {
-      const button = node("button", "", `${slotLabel(slot)} · ${people[slot].length} 人`);
+      const button = node("button");
+      button.append(node("span", "", slotLabel(slot)), node("b", "", `${people[slot].length} 人`));
       button.type = "button";
       button.addEventListener("click", () => {
         const index = data.dates.findIndex((day) => day.iso === slot.slice(0, 10));
@@ -110,7 +143,9 @@ function createPlanner(planner) {
   function render() {
     const editing = mode === "mine";
     const days = visibleDays();
-    byId("mine").hidden = !data.editable;
+    planner.dataset.mode = mode;
+    byId("view-heading").textContent = editing ? "标记空闲时段" : "团队空闲热力图";
+    byId("scale").hidden = editing;
     byId("mine").setAttribute("aria-pressed", String(editing));
     byId("group").setAttribute("aria-pressed", String(!editing));
     byId("group-summary").hidden = editing;
@@ -136,10 +171,13 @@ function createPlanner(planner) {
     }
 
     cells = [];
-    data.hours.forEach((hour, row) => {
-      contents.append(node("span", "hour", clock(hour)));
+    grid.classList.toggle("campus", Boolean(data.rows[0].lesson));
+    data.rows.forEach((period, row) => {
+      const axis = node("span", "hour", period.lesson || period.start);
+      if (period.lesson) axis.append(node("small", "", `${period.start}–${period.end}`));
+      contents.append(axis);
       days.forEach((day, column) => {
-        const slot = `${day.iso}T${String(hour).padStart(2, "0")}`;
+        const slot = `${day.iso}T${period.key}`;
         const cell = node("button", "cell");
         cell.type = "button";
         cell.dataset.slot = slot;
@@ -164,7 +202,7 @@ function createPlanner(planner) {
         cells.push(cell);
       });
     });
-    contents.append(node("span", "hour", clock(data.hours.at(-1) + 1)));
+    if (!data.rows[0].lesson) contents.append(node("span", "hour", data.rows.at(-1).end));
     grid.replaceChildren(contents);
     if (editing) updateCellColors();
     else {
@@ -273,38 +311,12 @@ function createPlanner(planner) {
     updateCellColors();
   });
 
-  byId("share").addEventListener("click", async () => {
-    let value = data.event_id;
-    let hint = "复制活动码，发给朋友在首页打开。";
-    try {
-      const url = new URL(window.location.href);
-      url.searchParams.set("event", data.event_id);
-      value = url.href;
-      hint = "手动复制链接，发给朋友打开。";
-      await navigator.clipboard.writeText(value);
-      byId("share-fallback").hidden = true;
-      message("已复制活动链接。");
-    } catch {
-      const input = byId("share-value");
-      byId("share-fallback").hidden = false;
-      byId("share-hint").textContent = hint;
-      input.value = value;
-      input.select();
-    }
-  });
-
   return function update(next, setTriggerValue) {
     sendAction = setTriggerValue;
-    if (!data || next.event_id !== data.event_id || next.editable !== data.editable) {
-      mode = next.editable ? "mine" : "group";
+    const opening = !data || next.event_id !== data.event_id;
+    if (opening) {
+      mode = "mine";
       page = 0;
-      const choices = [];
-      for (let i = 0; i < next.dates.length; i += pageSize) {
-        const first = next.dates[i].label;
-        const last = next.dates[Math.min(i + pageSize, next.dates.length) - 1].label;
-        choices.push(new Option(first === last ? first : `${first} – ${last}`, i / pageSize));
-      }
-      weekPicker.replaceChildren(...choices);
       selected = new Set(next.selected);
       saved = new Set(next.selected);
     } else if (!pending && !dirty()) {
@@ -316,12 +328,16 @@ function createPlanner(planner) {
       else if (pending.type === "save") {
         selected = new Set(next.selected);
         saved = new Set(next.selected);
-        message(`已保存 ${saved.size} 小时。`);
+        message(`已保存 ${quantity(saved.size)}。`);
       } else message("结果已刷新。");
       pending = undefined;
     }
     data = next;
     planner.hidden = false;
+    if (opening) {
+      pageSize = daysPerPage(planner.clientWidth);
+      rebuildDatePicker();
+    }
     render();
   };
 }

@@ -7,11 +7,12 @@ import streamlit as st
 from streamlit.errors import StreamlitSecretNotFoundError
 
 from availability import (
-    AvailabilityError, END_HOUR, EVENT_ID, MAX_DAYS, START_HOUR, create_event,
-    dates_for, default_range, normalize_identity, results, save_response, today, verify_member,
+    AvailabilityError, EVENT_ID, GRID_MODES, MAX_DAYS, TIMETABLE_SOURCE, create_event,
+    dates_for, default_range, normalize_identity, results, save_response, time_rows, today, verify_member,
 )
 from storage import GitHubStore, LocalStore
-from home_cover import render_cover
+from home_cover import render_cover, render_credit, render_masthead
+from event_ui import event_banner, event_overview
 
 
 ROOT = Path(__file__).resolve().parent
@@ -20,7 +21,7 @@ WEEKDAYS = "一二三四五六日"
 
 st.set_page_config(
     page_title="有空 · Free Time Pro", page_icon=":material/calendar_month:",
-    layout="centered" if st.query_params.get("event") else "wide",
+    layout="wide",
 )
 GRID = st.components.v2.component(
     "free_time_grid",
@@ -73,14 +74,17 @@ def create_dialog(store):
         date_range = st.date_input(
             "候选日期", (start, end), min_value=start, max_value=start + timedelta(days=365), format="YYYY/MM/DD"
         )
-        st.caption(f"默认从今天开始，最多选 {MAX_DAYS} 天。填色时每页显示 7 天。")
+        mode = st.radio("网格模式", list(GRID_MODES), format_func=GRID_MODES.get, horizontal=True)
+        st.caption(f"课节模式每格 50 分钟，所有参与者共用所选校区的[上课时间表]({TIMETABLE_SOURCE})。")
+        st.caption(f"默认从今天开始，最多选 {MAX_DAYS} 天。电脑每页最多 7 天，窄屏手机每页最多 4 天。")
         if st.form_submit_button("创建并打开", type="primary"):
             try:
-                event = create_event(title, date_range)
+                event = create_event(title, date_range, mode)
                 store.create(event)
                 go_to(event["id"])
             except AvailabilityError as exc:
                 st.error(str(exc))
+    render_credit()
 
 
 @st.dialog("加入活动")
@@ -92,6 +96,7 @@ def join_dialog():
                 go_to(parse_event_code(code))
             except AvailabilityError as exc:
                 st.error(str(exc))
+    render_credit()
 
 
 def show_event(store, event, read_problem=""):
@@ -99,25 +104,17 @@ def show_event(store, event, read_problem=""):
     identity_key = f"identity_{event_id}"
     ack_key = f"ack_{event_id}"
     identity = st.session_state.get(identity_key)
-    if st.button("← 返回首页"):
-        go_to()
-    st.title(event["title"])
     dates = dates_for(event)
-    start, end = dates[0], dates[-1]
-    st.caption(f"{start:%Y/%m/%d} — {end:%Y/%m/%d}　·　北京时间　·　08:00–22:00")
-    if end < today():
+    rows = time_rows(event)
+    event_banner(event, dates, rows)
+    if dates[-1] < today():
         st.info("候选日期已过去，仍可查看和补填记录。")
 
-    if identity:
-        text_col, exit_col = st.columns([4, 1])
-        text_col.text(f"正在编辑：{identity[1]}")
-        if exit_col.button("切换参与者"):
-            st.session_state.pop(identity_key)
-            st.session_state.pop(ack_key, None)
-            st.rerun()
-    else:
-        with st.expander("开始涂格", expanded=True):
-            with st.form(f"identity_form_{event_id}", clear_on_submit=True):
+    if not identity:
+        entry, overview = st.columns([1.8, 1], gap="medium")
+        with entry, st.container(key="ft_entry", border=True):
+            st.subheader("填写参与信息")
+            with st.form(f"identity_form_{event_id}", border=False):
                 name_col, code_col = st.columns(2)
                 name = name_col.text_input("昵称", max_chars=32, placeholder="大家认得出的名字")
                 code = code_col.text_input("编辑码", type="password", max_chars=80, placeholder="至少 6 个字符")
@@ -133,22 +130,31 @@ def show_event(store, event, read_problem=""):
                         st.rerun()
                     except AvailabilityError as exc:
                         st.error(str(exc))
+        with overview:
+            event_overview(event, dates)
+        return
 
-    member = event["members"].get(identity[0]) if identity else None
+    with st.container(key="ft_identity", horizontal=True, vertical_alignment="center"):
+        st.text(f"参与者 · {identity[1]}")
+        if st.button("切换参与者", type="tertiary"):
+            st.session_state.pop(identity_key)
+            st.session_state.pop(ack_key, None)
+            st.rerun()
+
+    member = event["members"].get(identity[0])
     ack = st.session_state.get(ack_key)
     grid = GRID(
         data={
             "event_id": event_id,
             "dates": [{"iso": day.isoformat(), "label": f"{day.month}/{day.day}",
                        "weekday": f"周{WEEKDAYS[day.weekday()]}"} for day in dates],
-            "hours": list(range(START_HOUR, END_HOUR)),
-            "editable": identity is not None,
+            "rows": rows,
             "has_response": member is not None,
             "selected": member["slots"] if member else [],
             "summary": results(event),
             "ack": ack,
         },
-        key=f"grid_{event_id}_{identity[0] if identity else ''}",
+        key=f"grid_{event_id}_{identity[0]}",
         on_action_change=lambda: None,
     )
     action = grid.get("action")
@@ -156,7 +162,7 @@ def show_event(store, event, read_problem=""):
         not ack or ack["id"] != action["id"]
     ):
         response = {"id": action["id"], "message": ""}
-        if action.get("type") == "save" and identity:
+        if action.get("type") == "save":
             try:
                 saved_event = store.update(event_id, lambda latest: save_response(latest, identity, action.get("slots")))
                 st.session_state["last_event"] = saved_event
@@ -180,8 +186,6 @@ try:
         elif join:
             join_dialog()
     else:
-        if isinstance(store, LocalStore):
-            st.warning("本机试用 · 记录只存在运行这台电脑上。部署后请在 Streamlit Secrets 配置 GitHub 存储。")
         problem = ""
         try:
             event = store.get(event_id)
@@ -192,12 +196,17 @@ try:
             if not event or event["id"] != event_id:
                 raise
             problem = str(exc)
-        if event:
-            show_event(store, event, problem)
-        else:
-            st.error("找不到这个活动。请检查链接或活动码。")
-            if st.button("返回首页"):
-                go_to()
+        st.html(ROOT / "cover.css")
+        with st.container(horizontal_alignment="center"):
+            with st.container(key="ft_event", width=1120):
+                render_masthead(event_page=True)
+                if event:
+                    show_event(store, event, problem)
+                else:
+                    st.error("找不到这个活动。请检查链接或活动码。")
+                render_credit()
+                if isinstance(store, LocalStore):
+                    st.caption("本机试用 · 活动记录保存在本机。")
 except AvailabilityError as exc:
     st.error(str(exc))
     if st.query_params.get("event") and st.button("返回首页"):

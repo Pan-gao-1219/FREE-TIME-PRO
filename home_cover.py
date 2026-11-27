@@ -3,6 +3,26 @@ from pathlib import Path
 import streamlit as st
 
 
+def render_masthead(event_page=False):
+    right = ('<a class="ft-home-link" href="?" target="_self">← 返回首页</a>'
+             if event_page else '<span class="ft-zone">北京时间 <b>UTC+8</b></span>')
+    st.html(f"""
+        <header class="ft-mast">
+          <div class="ft-brand"><span class="ft-logo" aria-hidden="true"><i></i><i></i><i></i></span>
+            <strong>有空</strong><span class="ft-brand-name">Free Time Pro</span></div>
+          {right}
+        </header>""")
+
+
+def render_credit():
+    st.html("""
+        <footer class="ft-credit">
+          <div><span>作者</span><strong>潘高</strong><span class="ft-school">中国海洋大学</span></div>
+          <a href="mailto:1534827320@qq.com" aria-label="联系作者，邮箱 1534827320@qq.com">
+            1534827320@qq.com <span aria-hidden="true">↗</span></a>
+        </footer>""")
+
+
 def overlap_preview():
     # Rows are hourly slots; columns are weekdays. Four people overlap on Thursday.
     rows = ((1, 0, 2, 1, 0), (2, 1, 3, 2, 1), (1, 3, 2, 4, 2), (0, 2, 1, 3, 1))
@@ -26,12 +46,7 @@ def render_cover(local_mode):
     st.html(Path(__file__).with_name("cover.css"))
     with st.container(horizontal_alignment="center"):
         with st.container(key="ft_home", width=1120, gap="small"):
-            st.html("""
-                <header class="ft-mast">
-                  <div class="ft-brand"><span class="ft-logo" aria-hidden="true"><i></i><i></i><i></i></span>
-                    <strong>有空</strong><span class="ft-brand-name">Free Time Pro</span></div>
-                  <span class="ft-zone">北京时间 <b>UTC+8</b></span>
-                </header>""")
+            render_masthead()
             with st.container(key="ft_hero", gap="medium"):
                 left, right = st.columns([1.1, 1], gap="medium", vertical_alignment="center")
                 with left:
@@ -47,16 +62,11 @@ def render_cover(local_mode):
                     st.html(overlap_preview())
                 st.html("""
                     <dl class="ft-specs">
-                      <div><dt>每日时段</dt><dd>08:00–22:00</dd></div>
-                      <div><dt>每格时长</dt><dd>1 小时</dd></div>
-                      <div><dt>每页日期</dt><dd>7 天</dd></div>
+                      <div><dt>网格模式</dt><dd>整点 / 课节</dd></div>
+                      <div><dt>课节校区</dt><dd>崂山 / 西海岸</dd></div>
+                      <div><dt>每页日期</dt><dd>最多 7 天</dd></div>
                     </dl>""")
-            st.html("""
-                <footer class="ft-credit">
-                  <div><span>作者</span><strong>潘高</strong><span class="ft-school">中国海洋大学</span></div>
-                  <a href="mailto:1534827320@qq.com" aria-label="联系作者，邮箱 1534827320@qq.com">
-                    1534827320@qq.com <span aria-hidden="true">↗</span></a>
-                </footer>""")
+            render_credit()
             if local_mode:
                 st.caption("本机试用 · 活动记录保存在本机。")
     return create, join
