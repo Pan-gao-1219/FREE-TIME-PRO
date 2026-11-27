@@ -11,13 +11,17 @@ from availability import (
     dates_for, default_range, normalize_identity, results, save_response, today, verify_member,
 )
 from storage import GitHubStore, LocalStore
+from home_cover import render_cover
 
 
 ROOT = Path(__file__).resolve().parent
 GRID_FILES = ROOT / "grid"
 WEEKDAYS = "一二三四五六日"
 
-st.set_page_config(page_title="有空 · 一起找时间", page_icon="🟩", layout="centered")
+st.set_page_config(
+    page_title="有空 · Free Time Pro", page_icon=":material/calendar_month:",
+    layout="centered" if st.query_params.get("event") else "wide",
+)
 GRID = st.components.v2.component(
     "free_time_grid",
     html=(GRID_FILES / "index.html").read_text(encoding="utf-8"),
@@ -61,15 +65,10 @@ def parse_event_code(value):
     return value
 
 
-def show_home(store):
+@st.dialog("创建活动")
+def create_dialog(store):
     start, end = default_range()
-    st.title("有空")
-    st.markdown("拖着涂出你有空的时间，看看大家哪天能约上。")
-    st.caption("北京时间 · 每天 08:00–22:00 · 每格 1 小时")
-
-    new, join = st.columns(2, gap="large")
-    with new, st.form("new_event"):
-        st.subheader("创建活动")
+    with st.form("new_event", border=False):
         title = st.text_input("活动名称", placeholder="例如：小组讨论", max_chars=80)
         date_range = st.date_input(
             "候选日期", (start, end), min_value=start, max_value=start + timedelta(days=365), format="YYYY/MM/DD"
@@ -83,8 +82,10 @@ def show_home(store):
             except AvailabilityError as exc:
                 st.error(str(exc))
 
-    with join, st.form("join_event"):
-        st.subheader("打开活动")
+
+@st.dialog("加入活动")
+def join_dialog():
+    with st.form("join_event", border=False):
         code = st.text_input("活动链接或活动码", placeholder="粘贴朋友发给你的链接", max_chars=2048)
         if st.form_submit_button("打开活动"):
             try:
@@ -171,13 +172,16 @@ def show_event(store, event, read_problem=""):
 
 try:
     store = get_store()
-    if isinstance(store, LocalStore):
-        st.warning("本机试用 · 记录只存在运行这台电脑上。部署后请在 Streamlit Secrets 配置 GitHub 存储。")
-
     event_id = st.query_params.get("event")
     if not event_id:
-        show_home(store)
+        create, join = render_cover(local_mode=isinstance(store, LocalStore))
+        if create:
+            create_dialog(store)
+        elif join:
+            join_dialog()
     else:
+        if isinstance(store, LocalStore):
+            st.warning("本机试用 · 记录只存在运行这台电脑上。部署后请在 Streamlit Secrets 配置 GitHub 存储。")
         problem = ""
         try:
             event = store.get(event_id)

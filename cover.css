@@ -1,0 +1,93 @@
+.ft-mast, .ft-credit, .ft-intro, .ft-board, .ft-specs {
+  font-family: Inter, "Microsoft YaHei", "PingFang SC", sans-serif;
+}
+.ft-mast, .ft-brand, .ft-credit, .ft-credit > div {
+  display: flex; align-items: center;
+}
+.ft-mast, .ft-credit { justify-content: space-between; gap: 12px; }
+.ft-mast { padding: 0 2px 4px; color: #183c40; }
+.ft-brand { gap: 12px; }
+.ft-brand strong { font-size: 23px; letter-spacing: -.04em; }
+.ft-brand-name { padding-left: 12px; border-left: 1px solid #cbd8d5; font-size: 15px; font-weight: 600; }
+.ft-logo { display: flex; align-items: center; justify-content: center; gap: 3px; width: 35px; height: 35px; background: #104d4c; border-radius: 10px; }
+.ft-logo i { width: 4px; height: 14px; background: #c5f1d5; border-radius: 2px; transform: skewY(-24deg); }
+.ft-logo i:first-child { margin-top: 8px; }
+.ft-logo i:last-child { margin-bottom: 8px; }
+.ft-zone { font-size: 13px; color: #526762; white-space: nowrap; }
+.ft-zone b { margin-left: 4px; font-weight: 550; }
+
+.st-key-ft_hero {
+  position: relative; isolation: isolate; overflow: hidden; box-sizing: border-box;
+  padding: clamp(26px, 4.5vw, 58px) clamp(24px, 4.5vw, 58px) 24px;
+  border-radius: 22px; color: #f6fbfa;
+  background: linear-gradient(115deg, #102c39 8%, #103d45 60%, #205855 100%);
+}
+.st-key-ft_hero::before {
+  content: ""; position: absolute; z-index: -1; inset: 0; pointer-events: none;
+  background-image: linear-gradient(#d2faef12 1px, transparent 1px), linear-gradient(90deg, #d2faef12 1px, transparent 1px);
+  background-size: 28px 28px; mask-image: linear-gradient(100deg, transparent 13%, black 95%);
+}
+.ft-intro h1 {
+  font: 720 clamp(38px, 4.6vw, 64px)/1.15 Inter, "Microsoft YaHei", "PingFang SC", sans-serif;
+  letter-spacing: -.045em; color: #fff; margin: 0; padding: 0;
+}
+.ft-intro h1 em { color: #acebc9; font-style: normal; }
+.ft-intro p { font-size: clamp(15px, 1.4vw, 18px); line-height: 1.75; color: #d1e2e1; margin: 18px 0 0; }
+.st-key-ft_actions { margin-top: 6px; }
+.st-key-ft_actions button { min-height: 44px; padding-inline: 18px; border-radius: 9px; font-weight: 650; }
+.st-key-ft_create button { background: #c1f1d4; border: 1px solid #c1f1d4; color: #133b32; }
+.st-key-ft_create button:hover { background: #dbffe9; color: #133b32; border-color: #dbffe9; }
+.st-key-ft_join button { background: #174047; border: 1px solid #719697; color: #f4fbf8; }
+.st-key-ft_join button:hover { background: #255158; border-color: #b5d4ce; color: white; }
+.st-key-ft_actions button:focus-visible, .ft-credit a:focus-visible { outline: 3px solid #67bf9a; outline-offset: 3px; }
+
+.ft-board {
+  box-sizing: border-box; width: 100%; max-width: 420px; margin: 0 0 0 auto;
+  padding: clamp(15px, 2vw, 25px); background: #f9fcfa; color: #1c3f3c;
+  border: 1px solid #fff; border-radius: 13px; box-shadow: 0 10px 28px #031b2440, 6px 6px 0 #91baa536;
+}
+.ft-board-top, .ft-board figcaption, .ft-scale { display: flex; align-items: center; }
+.ft-board-top, .ft-board figcaption { justify-content: space-between; gap: 6px; }
+.ft-board-top strong { font-size: 17px; }
+.ft-board-top small { font-size: 12px; color: #566e66; }
+.ft-matrix { display: grid; grid-template-columns: 39px repeat(5,minmax(0, 1fr)); gap: 5px; align-items: center; margin-top: 20px; }
+.ft-matrix span, .ft-scale { color: #576e65; font-size: 11px; }
+.ft-matrix span { text-align: center; }
+.ft-matrix .ft-hour { text-align: left; font-variant-numeric: tabular-nums; }
+.ft-matrix i { display: grid; place-items: center; height: 23px; border-radius: 3px; color: white; font: 650 12px/1 Inter, sans-serif; }
+.ft-level-0 { background: #e9f0ec; }
+.ft-level-1 { background: #bde3ce; }
+.ft-level-2 { background: #80c7aa; }
+.ft-level-3 { background: #439e81; }
+.ft-level-4 { background: #086855; }
+.ft-scale, .ft-scale span { display: flex; align-items: center; gap: 5px; }
+.ft-scale { justify-content: flex-end; margin: 9px 0 15px; }
+.ft-scale span { gap: 2px; }
+.ft-scale i { width: 10px; height: 6px; border-radius: 1px; }
+.ft-board figcaption { padding-top: 12px; border-top: 1px solid #dbe6df; color: #28574c; font-size: 13px; }
+.ft-board figcaption span::before { content: ""; display: inline-block; width: 7px; height: 7px; margin-right: 6px; background: #08745b; border-radius: 50%; }
+.st-key-ft_home .ft-specs { display: flex; align-items: start; gap: clamp(24px, 5vw, 66px); margin: 0; padding: 18px 0 0; border-top: 1px solid #a8cfc83d; }
+.ft-specs div { display: grid; gap: 3px; }
+.ft-specs dt { font-size: 12px; color: #b8cecc; }
+.ft-specs dd { margin: 0; font: 600 16px/1.35 Inter, "Microsoft YaHei", sans-serif; color: #f5fbf7; font-variant-numeric: tabular-nums; }
+.ft-credit { flex-wrap: wrap; color: #53675e; padding: 6px 2px; font-size: 14px; }
+.ft-credit > div { gap: 10px; }
+.ft-credit strong { color: #244237; }
+.ft-school { padding-left: 10px; border-left: 1px solid #c5d5ca; }
+.ft-credit a { color: #256858; text-decoration: underline; text-underline-offset: 3px; overflow-wrap: anywhere; }
+@media (max-width: 760px) {
+  .st-key-ft_hero { padding: 26px 22px 20px; }
+  .ft-board { padding: 15px; }
+  .ft-matrix { gap: 4px; }
+}
+@media (max-width: 640px) {
+  .ft-brand { gap: 8px; }
+  .ft-brand-name { font-size: 12px; padding-left: 8px; }
+  .ft-zone { font-size: 11px; }
+  .ft-board { max-width: none; }
+  .ft-intro h1 { font-size: clamp(32px, 8vw, 46px); }
+  .ft-intro p { margin-top: 12px; }
+  .st-key-ft_home .ft-specs { justify-content: space-between; gap: 8px; }
+  .ft-specs dd { font-size: 14px; }
+  .ft-credit { gap: 8px 16px; font-size: 13px; }
+}
